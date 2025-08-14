@@ -7,14 +7,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout Repo
       - name: Checkout
         uses: actions/checkout@v3
         with:
           lfs: true
 
+      # 2️⃣ Extract Project ZIP
       - name: Extract project
         run: unzip VehicleMasters_FullProject_Android15_Lite.zip -d UnityProject
 
+      # 3️⃣ Set Title, Package & Buff Player Vehicle
       - name: Set title, package, and buff player vehicle
         run: |
           # Set Unity project PlayerSettings for title & package
@@ -23,23 +26,25 @@ jobs:
             sed -i 's/productName: .*/productName: Vehicle Masters/' "$SETTINGS_FILE"
             sed -i 's/packageName: .*/packageName: com.vehiclemasters.buff/' "$SETTINGS_FILE"
           fi
-          
-          # Buff player vehicle stats (portable Bash method)
-find UnityProject -type f -name "*Player*.cs" | while read FILE; do
-  # maxSpeed +30%
-  sed -i -E "s/(maxSpeed\s*=\s*)([0-9]+)/echo \$((\2 + \2*30/100))/e" "$FILE"
-  # acceleration +25%
-  sed -i -E "s/(acceleration\s*=\s*)([0-9]+)/echo \$((\2 + \2*25/100))/e" "$FILE"
-  # steerSensitivity +20%
-  sed -i -E "s/(steerSensitivity\s*=\s*)([0-9]+)/echo \$((\2 + \2*20/100))/e" "$FILE"
-done
 
+          # Buff player vehicle stats (portable Bash method)
+          find UnityProject -type f -name "*Player*.cs" | while read FILE; do
+            # maxSpeed +30%
+            sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/echo $((\2 + \2*30/100))/e' "$FILE"
+            # acceleration +25%
+            sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/echo $((\2 + \2*25/100))/e' "$FILE"
+            # steerSensitivity +20%
+            sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
+          done
+
+      # 4️⃣ Cache Unity
       - name: Cache Unity
         uses: actions/cache@v3
         with:
           path: ~/.cache/unity
           key: ${{ runner.os }}-unity
 
+      # 5️⃣ Build APK
       - name: Build Android APK
         uses: game-ci/unity-builder@v2
         with:
@@ -49,9 +54,9 @@ done
           buildName: VehicleMasters_Android15_PlayerBuff
           buildPath: build
 
+      # 6️⃣ Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: VehicleMasters_Android15_PlayerBuff
           path: build/*.apk
-          
