@@ -52,7 +52,8 @@ jobs:
           targetPlatform: Android
           projectPath: UnityProject
           buildName: VehicleMasters_Android15_PlayerBuff
-          buildPath: build
+          buildsPath: build
+          allowDirtyBuild: true
 
       # 6️⃣ Upload APK
       - name: Upload APK
