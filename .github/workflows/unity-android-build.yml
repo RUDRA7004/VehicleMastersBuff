@@ -24,8 +24,15 @@ jobs:
             sed -i 's/packageName: .*/packageName: com.vehiclemasters.buff/' "$SETTINGS_FILE"
           fi
           
-          # Buff player vehicle stats only
-          find UnityProject -type f -name "*Player*.cs" -exec sed -i           -e 's/\(maxSpeed\s*=\s*\)\([0-9]*\)/echo "\1$((\2 + \2 * 30 / 100))"/ge'           -e 's/\(acceleration\s*=\s*\)\([0-9]*\)/echo "\1$((\2 + \2 * 25 / 100))"/ge'           -e 's/\(steerSensitivity\s*=\s*\)\([0-9]*\)/echo "\1$((\2 + \2 * 20 / 100))"/ge' {} +
+          # Buff player vehicle stats (portable Bash method)
+find UnityProject -type f -name "*Player*.cs" | while read FILE; do
+  # maxSpeed +30%
+  sed -i -E "s/(maxSpeed\s*=\s*)([0-9]+)/echo \$((\2 + \2*30/100))/e" "$FILE"
+  # acceleration +25%
+  sed -i -E "s/(acceleration\s*=\s*)([0-9]+)/echo \$((\2 + \2*25/100))/e" "$FILE"
+  # steerSensitivity +20%
+  sed -i -E "s/(steerSensitivity\s*=\s*)([0-9]+)/echo \$((\2 + \2*20/100))/e" "$FILE"
+done
 
       - name: Cache Unity
         uses: actions/cache@v3
