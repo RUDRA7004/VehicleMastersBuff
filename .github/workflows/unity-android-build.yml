@@ -1,4 +1,4 @@
-name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
+Name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
 
 on:
   workflow_dispatch:
@@ -36,13 +36,13 @@ jobs:
             # steerSensitivity +20%
             sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
           done
-            # 4️⃣ Activate Unity License
-  - name: Activate Unity License
-    uses: game-ci/unity-activate@v2
-    with:
-      email: ${{ secrets.UNITY_EMAIL }}
-      password: ${{ secrets.UNITY_PASSWORD }}
       
+      # 4️⃣ Activate Unity License
+      - name: Activate Unity License
+        uses: game-ci/unity-activate@v2
+        with:
+          email: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
 
       # 5️⃣ Cache Unity
       - name: Cache Unity
@@ -68,3 +68,4 @@ jobs:
         with:
           name: VehicleMasters_Android15_PlayerBuff
           path: build/*.apk
+          
