@@ -15,9 +15,9 @@ jobs:
       # 2️⃣ Extract Project ZIP
       - name: Extract project
         run: |
-          ls -la  # List files to debug
+          ls -la
           unzip -o VehicleMasters_FullProject_Android15_Lite.zip -d UnityProject
-          ls -la UnityProject  # Verify extraction
+          ls -la UnityProject
 
       # 3️⃣ Validate Project Structure
       - name: Validate project
@@ -39,11 +39,13 @@ jobs:
             echo "Error: ProjectSettings.asset not found!"
             exit 1
           fi
+          # Backup original files before modification
           find UnityProject -type f -name "*Player*.cs" | while read FILE; do
             if [ -f "$FILE" ]; then
-              sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/echo $((\2 + \2*30/100))/e' "$FILE"
-              sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/echo $((\2 + \2*25/100))/e' "$FILE"
-              sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
+              cp "$FILE" "${FILE}.bak"
+              sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/\1$(printf "%.0f" $(echo "\2 * 1.3" | bc))/' "$FILE"
+              sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/\1$(printf "%.0f" $(echo "\2 * 1.25" | bc))/' "$FILE"
+              sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/\1$(printf "%.0f" $(echo "\2 * 1.2" | bc))/' "$FILE"
             else
               echo "Warning: $FILE not found, skipping buff."
             fi
@@ -63,7 +65,15 @@ jobs:
           path: ~/.cache/unity
           key: ${{ runner.os }}-unity
 
-      # 7️⃣ Build Android APK
+      # 7️⃣ Test Project with Unity
+      - name: Test Unity Project
+        uses: game-ci/unity-test-runner@v2
+        with:
+          unityVersion: 2022.3.0f1
+          projectPath: UnityProject
+          testMode: editmode
+
+      # 8️⃣ Build Android APK
       - name: Build Android APK
         uses: game-ci/unity-builder@v2
         with:
@@ -74,7 +84,7 @@ jobs:
           buildsPath: build
           allowDirtyBuild: true
 
-      # 8️⃣ Upload APK
+      # 9️⃣ Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
