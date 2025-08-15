@@ -1,6 +1,7 @@
 Name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
 
-on:  workflow_dispatch:
+on: 
+  workflow_dispatch:
 
 jobs:
   build:
