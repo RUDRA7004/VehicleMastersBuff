@@ -36,15 +36,22 @@ jobs:
             # steerSensitivity +20%
             sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
           done
+            # 4️⃣ Activate Unity License
+  - name: Activate Unity License
+    uses: game-ci/unity-activate@v2
+    with:
+      email: ${{ secrets.UNITY_EMAIL }}
+      password: ${{ secrets.UNITY_PASSWORD }}
+      
 
-      # 4️⃣ Cache Unity
+      # 5️⃣ Cache Unity
       - name: Cache Unity
         uses: actions/cache@v3
         with:
           path: ~/.cache/unity
           key: ${{ runner.os }}-unity
 
-      # 5️⃣ Build APK
+      # 6️⃣ Build Android APK
       - name: Build Android APK
         uses: game-ci/unity-builder@v2
         with:
@@ -55,7 +62,7 @@ jobs:
           buildsPath: build
           allowDirtyBuild: true
 
-      # 6️⃣ Upload APK
+      # 7️⃣ Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
