@@ -1,4 +1,4 @@
-Name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
+name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
 
 on: 
   workflow_dispatch:
