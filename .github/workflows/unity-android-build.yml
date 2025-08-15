@@ -1,6 +1,5 @@
 name: Build Vehicle Masters APK (Player Buff Only, Separate Install)
-
-on: 
+on:
   workflow_dispatch:
 
 jobs:
@@ -15,28 +14,25 @@ jobs:
 
       # 2️⃣ Extract Project ZIP
       - name: Extract project
-        run: unzip VehicleMasters_FullProject_Android15_Lite.zip -d UnityProject
+        run: |
+          ls -la  # List files to debug
+          unzip -o VehicleMasters_FullProject_Android15_Lite.zip -d UnityProject
+          ls -la UnityProject  # Verify extraction
 
       # 3️⃣ Set Title, Package & Buff Player Vehicle
       - name: Set title, package, and buff player vehicle
         run: |
-          # Set Unity project PlayerSettings for title & package
           SETTINGS_FILE=$(find UnityProject -type f -name "ProjectSettings.asset")
           if [ -n "$SETTINGS_FILE" ]; then
             sed -i 's/productName: .*/productName: Vehicle Masters/' "$SETTINGS_FILE"
             sed -i 's/packageName: .*/packageName: com.vehiclemasters.buff/' "$SETTINGS_FILE"
           fi
-
-          # Buff player vehicle stats (portable Bash method)
           find UnityProject -type f -name "*Player*.cs" | while read FILE; do
-            # maxSpeed +30%
             sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/echo $((\2 + \2*30/100))/e' "$FILE"
-            # acceleration +25%
             sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/echo $((\2 + \2*25/100))/e' "$FILE"
-            # steerSensitivity +20%
             sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
           done
-      
+
       # 4️⃣ Activate Unity License
       - name: Activate Unity License
         uses: game-ci/unity-activate@v2
@@ -68,4 +64,3 @@ jobs:
         with:
           name: VehicleMasters_Android15_PlayerBuff
           path: build/*.apk
-          
