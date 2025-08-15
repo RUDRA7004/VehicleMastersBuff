@@ -19,35 +19,51 @@ jobs:
           unzip -o VehicleMasters_FullProject_Android15_Lite.zip -d UnityProject
           ls -la UnityProject  # Verify extraction
 
-      # 3️⃣ Set Title, Package & Buff Player Vehicle
+      # 3️⃣ Validate Project Structure
+      - name: Validate project
+        run: |
+          if [ ! -d "UnityProject/Assets" ]; then
+            echo "Error: Assets folder not found in UnityProject!"
+            exit 1
+          fi
+          echo "Project structure validated."
+
+      # 4️⃣ Set Title, Package & Buff Player Vehicle
       - name: Set title, package, and buff player vehicle
         run: |
           SETTINGS_FILE=$(find UnityProject -type f -name "ProjectSettings.asset")
           if [ -n "$SETTINGS_FILE" ]; then
             sed -i 's/productName: .*/productName: Vehicle Masters/' "$SETTINGS_FILE"
             sed -i 's/packageName: .*/packageName: com.vehiclemasters.buff/' "$SETTINGS_FILE"
+          else
+            echo "Error: ProjectSettings.asset not found!"
+            exit 1
           fi
           find UnityProject -type f -name "*Player*.cs" | while read FILE; do
-            sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/echo $((\2 + \2*30/100))/e' "$FILE"
-            sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/echo $((\2 + \2*25/100))/e' "$FILE"
-            sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
+            if [ -f "$FILE" ]; then
+              sed -i -E 's/(maxSpeed\s*=\s*)([0-9]+)/echo $((\2 + \2*30/100))/e' "$FILE"
+              sed -i -E 's/(acceleration\s*=\s*)([0-9]+)/echo $((\2 + \2*25/100))/e' "$FILE"
+              sed -i -E 's/(steerSensitivity\s*=\s*)([0-9]+)/echo $((\2 + \2*20/100))/e' "$FILE"
+            else
+              echo "Warning: $FILE not found, skipping buff."
+            fi
           done
 
-      # 4️⃣ Activate Unity License
+      # 5️⃣ Activate Unity License
       - name: Activate Unity License
         uses: game-ci/unity-activate@v2
         with:
           email: ${{ secrets.UNITY_EMAIL }}
           password: ${{ secrets.UNITY_PASSWORD }}
 
-      # 5️⃣ Cache Unity
+      # 6️⃣ Cache Unity
       - name: Cache Unity
         uses: actions/cache@v3
         with:
           path: ~/.cache/unity
           key: ${{ runner.os }}-unity
 
-      # 6️⃣ Build Android APK
+      # 7️⃣ Build Android APK
       - name: Build Android APK
         uses: game-ci/unity-builder@v2
         with:
@@ -58,7 +74,7 @@ jobs:
           buildsPath: build
           allowDirtyBuild: true
 
-      # 7️⃣ Upload APK
+      # 8️⃣ Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
